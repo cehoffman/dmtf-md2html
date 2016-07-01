@@ -17,7 +17,9 @@
       <p><strong>Provide any comments through the DMTF Feedback Portal:</strong> <a href="http://www.dmtf.org/standards/feedback">http://www.dmtf.org/standards/feedback</a></p>
     </div>
     <div class="document">
+      <% if (data.SupersedesVersion) { %>
       <p>Supersedes: <%= data.SupersedesVersion %></p>
+      <% } %>
       <p>Document Class: <%= data.DocClass %></p>
       <p>Document Status: <%= data.DocStatus %></p>
       <p>Document Language: <%= data.DocLang %></p>
