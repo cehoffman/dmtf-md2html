@@ -1,0 +1,39 @@
+<div data-doc-title="<%= data.DocTitle %>" data-doc-number="<%= data.DocNumber %>" id="header"></div>
+<div id="wrapper">
+  <div data-status="<%= data.DocStatus %>" id="dmtf">
+    <div class="preamble">
+      <div class="logo"></div>
+      <p>Document Identifier: DSP<%= data.DocNumber %></p>
+      <p>Date: <%= data.modified %></p>
+      <p>Version: <%= data.DocVersion %></p>
+      <% if (data.DocWorkGroupVersion) { %>
+      <p>Work Group Version: <%= data.DocWorkGroupVersion %></p>
+      <% } %>
+    </div>
+    <h1><%= data.DocTitle %></h1>
+    <div class="wip">
+      <strong>Information for Work-in-Progress version:</strong>
+      <p><strong>IMPORTANT:</strong> This document is not a standard. It does not necessarily reflect the views of the DMTF or its members. Because this document is a Work in Progress, this document may still change, perhaps profoundly and without notice. This document is available for public review and comment until superseded.</p>
+      <p><strong>Provide any comments through the DMTF Feedback Portal:</strong> <a href="http://www.dmtf.org/standards/feedback">http://www.dmtf.org/standards/feedback</a></p>
+    </div>
+    <div class="document">
+      <p>Supersedes: <%= data.SupersedesVersion %></p>
+      <p>Document Class: <%= data.DocClass %></p>
+      <p>Document Status: <%= data.DocStatus %></p>
+      <p>Document Language: <%= data.DocLang %></p>
+    </div>
+    <div class="copyright">
+      <p>Copyright Notice</p>
+      <p>Copyright &copy; <%= data.copyright %> Distributed Management Task Force, Inc. (DMTF). All rights reserved.
+    </div>
+    <p>DMTF is a not-for-profit association of industry members dedicated to promoting enterprise and systems management and interoperability. Members and non-members may reproduce DMTF specifications and documents, provided that correct attribution is given. As DMTF specifications may be revised from time to time, the particular version and release date should always be noted.</p>
+    <p>Implementation of certain elements of this standard or proposed standard may be subject to third party patent rights, including provisional patent rights (herein "patent rights"). DMTF makes no representations to users of the standard as to the existence of such rights, and is not responsible to recognize, disclose, or identify any or all such third party patent right, owners or claimants, nor for any incomplete or inaccurate identification or disclosure of such rights, owners or claimants. DMTF shall have no liability to any party, in any manner or circumstance, under any legal theory whatsoever, for failure to recognize, disclose, or identify any such third party patent rights, or for such party’s reliance on the standard or incorporation thereof in its product, protocols or testing procedures. DMTF shall have no liability to any party implementing such standard, whether such implementation is foreseeable or not, nor to any patent owner or claimant, and shall have no liability or responsibility for costs or losses incurred if a standard is withdrawn or modified after publication, and shall be indemnified and held harmless by any party implementing the standard from any and all claims of infringement by a patent owner for such implementations.</p>
+    <p>For information about patents held by third-parties which have notified the DMTF that, in their opinion, such patent may relate to or impact implementations of DMTF standards, visit <a href="http://www.dmtf.org/about/policies/disclosures.php">http://www.dmtf.org/about/policies/disclosures.php</a>.</p>
+    <p>This document’s normative language is English. Translation into other languages is permitted.</p>
+  </div>
+  <p id="toc-header">CONTENTS</p>
+  <ul id="toc"></ul>
+  <div id="body"><%= contents %></div>
+  <div id="last-footer-fix"></div>
+</div>
+<div id="footer"><div data-doc-version="<%= data.DocVersion %>"><div><%= data.DocConfidentiality %> <%= data.DocStatus %></div></div></div>

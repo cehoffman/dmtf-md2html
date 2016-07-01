@@ -1,0 +1,25 @@
+:global {
+  html {
+    box-sizing: border-box;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.dropZone {
+  align-items: center;
+  border: 2px dashed #444;
+  color: #444;
+  display: flex;
+  height: calc(100vh - 2 * @margin);
+  justify-content: center;
+  margin: 10px;
+  width: calc(100vw - 2 * @margin);
+}
