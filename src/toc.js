@@ -1,10 +1,9 @@
-export function createToC(content) {
+export function createToC(ul, content) {
   const toc = [];
   const levelMap = ['H2', 'H3', 'H4', 'H5', 'H6'];
   // eslint-disable-next-line no-sequences, no-return-assign
   const counter = levelMap.reduce((acc, tag) => (acc[tag] = 0, acc), {});
   const tags = [...content.querySelectorAll(levelMap.join(','))];
-  let ul = document.createElement('ul');
   let currentLevel = 0;
 
   for (let tag of tags) {

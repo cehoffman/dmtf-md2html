@@ -56,9 +56,9 @@ function insertOrUpdate(html, name) {
   return function generate(node) {
     node.elm.innerHTML = html;
     let toc = node.elm.querySelector('#toc');
-    let body = node.elm.querySelector('#body');
+    let body = node.elm.querySelector('#wrapper');
     toc.innerHTML = '';
-    toc.appendChild(createToC(body));
+    createToC(toc, body);
 
     for (let block of [...body.querySelectorAll('pre code')]) {
       if (/lang-/.test(block.getAttribute('class'))) {
