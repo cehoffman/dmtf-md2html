@@ -16,12 +16,11 @@ import xs from 'xstream';
 
 export function main({DOM, FileReader, MarkdownRenderer}) {
   const root$ = DOM.select(':root');
-  const drops$ = xs.merge(
+  const fileDropped$ = xs.merge(
     root$.events('dragover'),
     root$.events('drop'),
   ).map(killEvent).filter(({type}) => type === 'drop');
 
-  const file$ = drops$.map(({dataTransfer: {files}}) => files[0]);
   const html$ = FileReader.map(stream$ =>
     stream$.last().map(render).flatten()
   ).flatten();
@@ -59,11 +58,10 @@ export function main({DOM, FileReader, MarkdownRenderer}) {
   });
 
   xs.merge(
-    // Start with overlay present
-    fromEvent(document, 'dragenter').startWith(null).mapTo(1),
+    fromEvent(document, 'dragenter').mapTo(1),
     // Register leave after first drop has occurred
-    DOM.select(`.${dropZone}`).events('dragleave').compose(dropUntil(drops$)).mapTo(0),
-    drops$.mapTo(0),
+    DOM.select(`.${dropZone}`).events('dragleave').compose(dropUntil(fileDropped$)).mapTo(0),
+    fileDropped$.mapTo(0),
   )
   .addListener({
     next: value => {
@@ -77,11 +75,13 @@ export function main({DOM, FileReader, MarkdownRenderer}) {
     complete: () => {},
   });
 
-  xs.merge(html$.mapTo(1), file$.mapTo(0))
+  xs.merge(html$.mapTo(1), fileDropped$.mapTo(0))
   .addListener({
     next: value => {
       const dmtf = document.getElementById('dmtf');
-      dmtf && (dmtf.style.opacity = value);
+      if (dmtf) {
+        dmtf.style.opacity = value;
+      }
     },
     error: () => {},
     complete: () => {},
@@ -89,10 +89,10 @@ export function main({DOM, FileReader, MarkdownRenderer}) {
 
   return {
     DOM: display$,
-    FileReader: file$,
+    FileReader: fileDropped$.map(({dataTransfer: {files}}) => files[0]),
     // Log: xs.merge(
       // dragEvents$.map(killEvent).map(evt => `Killed ${evt.type}`),
-      // drops$.map(evt => evt.dataTransfer.files),
+      // fileDropped$.map(evt => evt.dataTransfer.files),
       // FileReader.flatten(),
     // ),
     // MarkdownRenderer: FileReader.flatten(),
