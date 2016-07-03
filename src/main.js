@@ -48,6 +48,16 @@ export function main({DOM, FileReader, MarkdownRenderer}) {
     ]);
   });
 
+  DOM.select(`.${dropZone}`).events('transitionend').addListener({
+    next: evt => {
+      if (evt.target.style.opacity === '0') {
+        evt.target.style.visibility = 'hidden';
+      }
+    },
+    error: () => {},
+    complete: () => {},
+  });
+
   xs.merge(
     // Start with overlay present
     fromEvent(document, 'dragenter').startWith(null).mapTo(1),
@@ -58,7 +68,10 @@ export function main({DOM, FileReader, MarkdownRenderer}) {
   .addListener({
     next: value => {
       const drop = document.querySelector(`.${dropZone}`);
-      drop && (drop.style.opacity = value);
+      if (drop) {
+        value && (drop.style.visibility = 'visible');
+        drop.style.opacity = value;
+      }
     },
     error: () => {},
     complete: () => {},
