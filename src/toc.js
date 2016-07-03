@@ -1,53 +1,55 @@
-export function createToC(ul, content) {
-  const toc = [];
-  const levelMap = ['H2', 'H3', 'H4', 'H5', 'H6'];
+import {modifyHeader, parse, serialize} from './toc-driver';
+
+export function toc(html) {
+  const levels = [];
+  const levelMap = ['h2', 'h3', 'h4', 'h5', 'h6'];
   // eslint-disable-next-line no-sequences, no-return-assign
   const counter = levelMap.reduce((acc, tag) => (acc[tag] = 0, acc), {});
-  const tags = [...content.querySelectorAll(levelMap.join(','))];
   let currentLevel = 0;
 
-  for (let tag of tags) {
-    let tagName = tag.tagName.toUpperCase();
-    let level = levelMap.indexOf(tagName);
+  const context = parse(html, levelMap.join(','));
+  let root = [];
+
+  for (let tag of context.tags) {
+    let level = levelMap.indexOf(tag.type);
     let num = [];
 
     if (level > currentLevel) {
-      toc.push(ul);
-      ul.appendChild(ul = document.createElement('ul'));
+      levels.push(root);
+      root.push(root = []);
     }
 
     while (level < currentLevel) {
       counter[levelMap[currentLevel--]] = 0;
-      ul = toc.pop();
+      root = levels.pop();
     }
 
-    counter[levelMap[level]]++;
+    counter[tag.type]++;
     for (let _ of levelMap) {
       num.push(`${counter[_]}.`);
-      if (_ === tagName) { break; }
+      if (_ === tag.type) { break; }
     }
 
-    let txt = `${tag.firstChild.textContent}`;
-    if (!tag.hasAttribute('toc-processed')) {
+    let txt = tag.text;
+    if (!/^(\d+\.)+/.test(txt)) {
       txt = `${num.join('')} ${txt}`;
-      tag.setAttribute('toc-processed', '');
     }
-    ul.appendChild(createToCItem(`#${tag.id}`, txt));
-    tag.removeChild(tag.firstChild);
-    tag.insertBefore(document.createTextNode(txt), tag.firstChild);
+    root.push({tag, txt});
     currentLevel = level;
   }
 
-  return toc[0] || ul;
+  return Promise.resolve(
+    `<ul id="toc">${generate(levels[0] || root)}</ul>${serialize(context)}`
+  );
 }
 
-function createToCItem(href, txt) {
-  const li = document.createElement('li');
-  const anchor = document.createElement('a');
-
-  anchor.href = href;
-  anchor.textContent = txt;
-
-  li.appendChild(anchor);
-  return li;
+function generate(items) {
+  return items.map(item => {
+    if (Array.isArray(item)) {
+      return `<ul>${generate(item)}</ul>`;
+    } else {
+      modifyHeader(item.tag, item.txt);
+      return `<li><a href="#${item.tag.id}">${item.txt}</a></li>`;
+    }
+  }).join('');
 }

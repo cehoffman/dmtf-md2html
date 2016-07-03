@@ -1,103 +1,19 @@
-import '!!style!raw!highlight.js/styles/github.css';
-import '!!style!raw!less!./dmtf.css';
+import '!!style!css!highlight.js/styles/github.css';
+import '!!style!css!less!./dmtf.css';
 // import {a, div, h1, h2, p, strong} from '@cycle/dom';
 import {dropZone, instructions} from './styles.css';
 import {basename} from 'path';
-import {createToC} from './toc';
 import {div} from '@cycle/dom';
 import dropUntil from 'xstream/extra/dropUntil';
 import fromEvent from 'xstream/extra/fromEvent';
-import hljs from 'highlight.js';
 import {render} from './markdown-driver';
 import {saveAs} from 'filesaver.js';
 import template from 'lodash.template';
 import wrapper from 'raw!./template.html';
 import xs from 'xstream';
 
-export function main({DOM, FileReader, MarkdownRenderer}) {
-  const root$ = DOM.select(':root');
-  const fileDropped$ = xs.merge(
-    root$.events('dragover'),
-    root$.events('drop'),
-  ).map(killEvent).filter(({type}) => type === 'drop');
-
-  const html$ = FileReader.map(stream$ =>
-    stream$.last().map(render).flatten()
-  ).flatten();
-
-  const display$ = html$.map(({data, html, file: {name}}) => {
-    const wrapped = template(wrapper)({contents: html, data});
-    return div('#dmtf', {
-      hook: {
-        insert: insertOrUpdate(wrapped, name),
-        update: insertOrUpdate(wrapped, name),
-      },
-      style: {transition: 'opacity 0.6s'},
-    });
-  })
-  .startWith(div('#dmtf'))
-  .map(rendered => {
-    return div([
-      rendered,
-      div(`.${dropZone}`, {
-        style: {opacity: '0', transition: 'opacity 0.6s', delayed: {opacity: '1'}},
-      }, [
-        div(`.${instructions}`, 'Drop to process'),
-      ]),
-    ]);
-  });
-
-  DOM.select(`.${dropZone}`).events('transitionend').addListener({
-    next: evt => {
-      if (evt.target.style.opacity === '0') {
-        evt.target.style.visibility = 'hidden';
-      }
-    },
-    error: () => {},
-    complete: () => {},
-  });
-
-  xs.merge(
-    fromEvent(document, 'dragenter').mapTo(1),
-    // Register leave after first drop has occurred
-    DOM.select(`.${dropZone}`).events('dragleave').compose(dropUntil(fileDropped$)).mapTo(0),
-    fileDropped$.mapTo(0),
-  )
-  .addListener({
-    next: value => {
-      const drop = document.querySelector(`.${dropZone}`);
-      if (drop) {
-        value && (drop.style.visibility = 'visible');
-        drop.style.opacity = value;
-      }
-    },
-    error: () => {},
-    complete: () => {},
-  });
-
-  xs.merge(html$.mapTo(1), fileDropped$.mapTo(0))
-  .addListener({
-    next: value => {
-      const dmtf = document.getElementById('dmtf');
-      if (dmtf) {
-        dmtf.style.opacity = value;
-      }
-    },
-    error: () => {},
-    complete: () => {},
-  });
-
-  return {
-    DOM: display$,
-    FileReader: fileDropped$.map(({dataTransfer: {files}}) => files[0]),
-    // Log: xs.merge(
-      // dragEvents$.map(killEvent).map(evt => `Killed ${evt.type}`),
-      // fileDropped$.map(evt => evt.dataTransfer.files),
-      // FileReader.flatten(),
-    // ),
-    // MarkdownRenderer: FileReader.flatten(),
-    // DOM: xs.of('<div>Blah2</div>')
-  };
+export function main(sources) {
+  return view(model(intent(sources)));
 }
 
 function killEvent(evt) {
@@ -110,18 +26,104 @@ function killEvent(evt) {
 function insertOrUpdate(html, name) {
   return function generate(node) {
     node.elm.innerHTML = html;
-    let toc = node.elm.querySelector('#toc');
-    let body = node.elm.querySelector('#wrapper');
-    toc.innerHTML = '';
-    createToC(toc, body);
 
-    for (let block of [...body.querySelectorAll('pre code')]) {
-      if (/lang-/.test(block.getAttribute('class'))) {
-        hljs.highlightBlock(block);
-      }
-    }
-
-    let blob = new Blob([document.firstElementChild.outerHTML]);
+    let blob = new Blob([`<!doctype html>${document.firstElementChild.outerHTML}`]);
     saveAs(blob, `${basename(name, '.md')}.html`);
+  };
+}
+
+function intent({DOM, FileReader}) {
+  const root$ = DOM.select(':root');
+
+  const fileDropped$ = xs.merge(
+    root$.events('dragover'),
+    root$.events('drop'),
+  ).map(killEvent).filter(({type}) => type === 'drop');
+
+  const fileLoaded$ = FileReader.map(stream$ => stream$.last()).flatten();
+
+  const hide$ = root$.events('transitionend')
+  .filter(({propertyName}) => 'opacity')
+  .map(({target}) => target)
+  .filter(({style: {opacity}}) => opacity === '0');
+
+  const dragEnter$ = fromEvent(document, 'dragenter');
+  const dragLeave$ = DOM.select(`.${dropZone}`)
+  .events('dragleave')
+  .compose(dropUntil(fileDropped$));
+
+  return {
+    dragEnter$,
+    dragLeave$,
+    fileDropped$,
+    fileLoaded$,
+    hide$,
+  };
+}
+
+function model({dragEnter$, dragLeave$, fileDropped$, fileLoaded$, hide$}) {
+  const contentOpacity$ = xs.merge(fileLoaded$.mapTo(1), fileDropped$.mapTo(0));
+
+  const dropZoneOpacity$ = xs.merge(
+    dragEnter$.mapTo(1),
+    dragLeave$.mapTo(0),
+    fileDropped$.mapTo(0),
+  );
+
+  const file$ = fileDropped$.map(({dataTransfer: {files}}) => files[0]);
+
+  const markdown$ = fileLoaded$.map(render).flatten();
+
+  return {
+    contentOpacity$,
+    dropZoneOpacity$,
+    file$,
+    hide$,
+    markdown$,
+  };
+}
+
+function view({contentOpacity$, dropZoneOpacity$, file$, hide$, markdown$}) {
+  const view$ = markdown$.map(({data, html, file: {name}}) => {
+    const wrapped = template(wrapper)({contents: html, data});
+    return div('#dmtf', {
+      hook: {
+        insert: insertOrUpdate(wrapped, name),
+        update: insertOrUpdate(wrapped, name),
+      },
+      style: {transition: 'opacity 0.6s, visibility 0.2s'},
+    });
+  })
+  .startWith(div('#dmtf'))
+  .map(rendered => {
+    return div([
+      rendered,
+      div(`.${dropZone}`, {
+        style: {
+          opacity: '0',
+          transition: 'opacity 0.6s, visibility 0.2s',
+          delayed: {opacity: '1'}
+        },
+      }, [
+        div(`.${instructions}`, 'Drop to process'),
+      ]),
+    ]);
+  });
+
+  const fadeInOut$ = xs.merge(
+    contentOpacity$.map(val => ({target: '#dmtf', opacity: val})),
+    dropZoneOpacity$.map(val => ({target: `.${dropZone}`, opacity: val})),
+  );
+
+  return {
+    DOM: view$,
+    Fader: fadeInOut$,
+    FileReader: file$,
+    Visibility: xs.merge(
+      hide$.map(target => ({target, visibility: 'hidden'})),
+      fadeInOut$
+      .filter(({opacity}) => opacity)
+      .map(({target}) => ({target, visibility: 'visible'})),
+    ),
   };
 }

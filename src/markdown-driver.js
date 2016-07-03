@@ -1,6 +1,8 @@
+import {highlight} from './highlight';
 import jsYaml from 'js-yaml';
 import marked from 'marked';
 import template from 'lodash.template';
+import {toc} from './toc';
 import xs from 'xstream';
 
 const documentDefaults = {
@@ -20,14 +22,6 @@ const docStatuses = {
   }
 };
 
-export function makeMarkdownDriver() {
-  return function markdownDriver(request$, streamAdapter) {
-    const response$ = request$.map(render).remember();
-    response$.addListener({next: () => {}, error: () => {}, complete: () => {}});
-    return response$;
-  };
-}
-
 export function render({text: md, file}) {
   return xs.create({
     start: function startMarkdownRender(listener) {
@@ -36,8 +30,11 @@ export function render({text: md, file}) {
         if (err) {
           return listener.error(err);
         }
-        listener.next({data: attributes, html, file});
-        listener.complete();
+
+        highlight(html).then(toc).then(result => {
+          listener.next({data: attributes, html: result, file});
+          listener.complete();
+        });
       });
     },
     stop: () => {},

@@ -1,19 +1,22 @@
-// import {rerunner, restartable} from 'cycle-restart';
-// import Cyclejs from '@cycle/core';
 import {main} from './main';
 import {makeDOMDriver} from '@cycle/dom';
 import {makeFileReaderDriver} from './file-reader-driver';
-// import {makeMarkdownDriver} from './markdown-driver';
 import {run} from '@cycle/xstream-run';
-// import {run} from '@cycle/core';
-// window.Cyclejs = Cyclejs;
-
-// const drivers = {
-//   DOM: restartable(makeDOMDriver('body'), {pauseSinksWhileReplaying: false}),
-// };
 
 run(main, {
   DOM: makeDOMDriver('body'),
+  Fader: stream$ => {
+    stream$.addListener({
+      next: ({target, opacity}) => {
+        const el = typeof target === 'string' ? document.querySelector(target) : target;
+        if (el) {
+          el.style.opacity = opacity;
+        }
+      },
+      complete: () => {},
+      error: () => {},
+    });
+  },
   FileReader: makeFileReaderDriver(),
   Log: msg$ => msg$.addListener({
     /* eslint-disable no-console */
@@ -22,15 +25,16 @@ run(main, {
     complete: console.log.bind(console, 'COMPLETE:'),
     /* eslint-enable no-console */
   }),
-  // MarkdownRenderer: makeMarkdownDriver(),
+  Visibility: stream$ => {
+    stream$.addListener({
+      next: ({target, visibility}) => {
+        const el = typeof target === 'string' ? document.querySelector(target) : target;
+        if (el) {
+          el.style.visibility = visibility;
+        }
+      },
+      complete: () => {},
+      error: () => {},
+    });
+  },
 });
-// const rerun = rerunner(run);
-// rerun(main, drivers);
-
-// if (module && module.hot) {
-//   console.log('IN the HOTNESS');
-//   module.hot.accept('./main', () => {
-//     rerun(main, drivers);
-//   });
-//   module.hot.accept();
-// }
