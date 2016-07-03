@@ -20,7 +20,7 @@ function createReader(file) {
       this.reader = new FileReader();
       this.reader.onprogress = evt => listener.next(evt);
       this.reader.onload = () => {
-        listener.next(this.reader.result);
+        listener.next({text: this.reader.result, file});
         listener.complete();
       };
       this.reader.readAsText(file);

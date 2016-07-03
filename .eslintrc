@@ -29,7 +29,7 @@
  */
     "no-shadow": "error",                  // http://eslint.org/docs/rules/no-shadow
     "no-shadow-restricted-names": "error", // http://eslint.org/docs/rules/no-shadow-restricted-names
-    "no-unused-vars": ["error", {          // http://eslint.org/docs/rules/no-unused-vars
+    "no-unused-vars": ["warn", {          // http://eslint.org/docs/rules/no-unused-vars
       "vars": "local",
       "args": "none"
     }],
@@ -168,7 +168,7 @@
     "unicode-bom": "error",
     "no-this-before-super": "error",
     "require-yield": "error",
-    "sort-imports": ["error", {
+    "sort-imports": ["warn", {
       "ignoreCase": true
     }],
     "space-in-parens": ["error", "never"],

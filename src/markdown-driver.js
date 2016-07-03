@@ -28,7 +28,7 @@ export function makeMarkdownDriver() {
   };
 }
 
-export function render(md) {
+export function render({text: md, file}) {
   return xs.create({
     start: function startMarkdownRender(listener) {
       const {attributes, body} = fm(md);
@@ -36,7 +36,7 @@ export function render(md) {
         if (err) {
           return listener.error(err);
         }
-        listener.next({data: attributes, html});
+        listener.next({data: attributes, html, file});
         listener.complete();
       });
     },

@@ -46,7 +46,11 @@
     "declaration-block-no-ignored-properties": true,
     "declaration-block-no-shorthand-property-overrides": null,
     "declaration-block-properties-order": [
-      ["composes"], {"unspecified": "bottomAlphabetical"}
+      ["composes", "width", "height",
+      "position", "top", "right", "bottom", "left",
+      "margin", "margin-top", "margin-right", "margin-bottom", "margin-left",
+      "padding", "padding-top", "padding-right", "padding-bottom", "padding-left"],
+      {"unspecified": "bottomAlphabetical"}
     ],
     "declaration-block-semicolon-newline-after": "always",
     "declaration-block-semicolon-newline-before": "never-multi-line",
