@@ -1,5 +1,3 @@
-import '!!style!css!highlight.js/styles/github.css';
-import '!!style!css!less!./dmtf.css';
 // import {a, div, h1, h2, p, strong} from '@cycle/dom';
 import {dropZone, instructions} from './styles.css';
 import {basename} from 'path';
@@ -9,7 +7,7 @@ import fromEvent from 'xstream/extra/fromEvent';
 import {render} from './markdown-driver';
 import {saveAs} from 'filesaver.js';
 import template from 'lodash.template';
-import wrapper from 'raw!./template.html';
+import wrapper from '!!raw!./page.html';
 import xs from 'xstream';
 
 export function main(sources) {
@@ -23,11 +21,11 @@ function killEvent(evt) {
   return evt;
 }
 
-function insertOrUpdate(html, name) {
+function insertOrUpdate({data, html, name}) {
   return function generate(node) {
     node.elm.innerHTML = html;
 
-    let blob = new Blob([`<!doctype html>${document.firstElementChild.outerHTML}`]);
+    let blob = new Blob([template(wrapper)({contents: html, data})]);
     saveAs(blob, `${basename(name, '.md')}.html`);
   };
 }
@@ -85,13 +83,12 @@ function model({dragEnter$, dragLeave$, fileDropped$, fileLoaded$, hide$}) {
 
 function view({contentOpacity$, dropZoneOpacity$, file$, hide$, markdown$}) {
   const view$ = markdown$.map(({data, html, file: {name}}) => {
-    const wrapped = template(wrapper)({contents: html, data});
     return div('#dmtf', {
       hook: {
-        insert: insertOrUpdate(wrapped, name),
-        update: insertOrUpdate(wrapped, name),
+        insert: insertOrUpdate({data, html, name}),
+        update: insertOrUpdate({data, html, name}),
       },
-      style: {transition: 'opacity 0.6s, visibility 0.2s'},
+      style: {transition: 'opacity 0.6s, visibility 0.6s'},
     });
   })
   .startWith(div('#dmtf'))
@@ -101,7 +98,7 @@ function view({contentOpacity$, dropZoneOpacity$, file$, hide$, markdown$}) {
       div(`.${dropZone}`, {
         style: {
           opacity: '0',
-          transition: 'opacity 0.6s, visibility 0.2s',
+          transition: 'opacity 0.6s, visibility 0.6s',
           delayed: {opacity: '1'}
         },
       }, [

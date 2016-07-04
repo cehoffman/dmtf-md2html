@@ -1,8 +1,11 @@
+import docStyle from '!!css!less!./dmtf.less';
 import {highlight} from './highlight';
+import hljsStyle from '!!css!highlight.js/styles/github.css';
 import jsYaml from 'js-yaml';
 import marked from 'marked';
 import template from 'lodash.template';
 import {toc} from './toc';
+import wrapper from '!!raw!./template.html';
 import xs from 'xstream';
 
 const documentDefaults = {
@@ -32,7 +35,15 @@ export function render({text: md, file}) {
         }
 
         highlight(html).then(toc).then(result => {
-          listener.next({data: attributes, html: result, file});
+          listener.next({
+            data: attributes,
+            html: template(wrapper)({
+              contents: result,
+              data: attributes,
+              style: `${docStyle}${hljsStyle}`
+            }),
+            file,
+          });
           listener.complete();
         });
       });
