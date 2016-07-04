@@ -34,7 +34,9 @@ export function render({text: md, file}) {
           return listener.error(err);
         }
 
-        highlight(html).then(toc).then(result => {
+        Promise.all([dataURI(attributes.logo), highlight(html).then(toc)])
+        .then(([logo, result]) => {
+          attributes.logo = logo;
           listener.next({
             data: attributes,
             html: template(wrapper)({
@@ -80,4 +82,19 @@ function fm(content) {
   }
 
   return result;
+}
+
+function dataURI(url) {
+  return new Promise(resolve => {
+    let newImg = new Image();
+    newImg.crossOrigin = 'anonymous';
+    newImg.onload = function() {
+      let canvas = document.createElement('canvas');
+      canvas.height = this.height;
+      canvas.width = this.width;
+      canvas.getContext('2d').drawImage(newImg, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    newImg.src = url;
+  });
 }
