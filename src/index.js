@@ -2,6 +2,7 @@ import {main} from './main';
 import {makeDOMDriver} from '@cycle/dom';
 import {makeFileReaderDriver} from './file-reader-driver';
 import {run} from '@cycle/xstream-run';
+import {saveAs} from 'filesaver.js';
 
 run(main, {
   DOM: makeDOMDriver('body'),
@@ -18,6 +19,13 @@ run(main, {
     });
   },
   FileReader: makeFileReaderDriver(),
+  FileWriter: msg$ => msg$.addListener({
+    next: ({name, content}) => {
+      saveAs(content, name);
+    },
+    complete: () => {},
+    error: () => {},
+  }),
   Log: msg$ => msg$.addListener({
     /* eslint-disable no-console */
     next: console.log.bind(console, 'LOG:'),

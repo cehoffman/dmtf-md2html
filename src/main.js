@@ -1,13 +1,16 @@
-// import {a, div, h1, h2, p, strong} from '@cycle/dom';
 import {dropZone, instructions} from './styles.css';
 import {basename} from 'path';
+import baseWrapper from '!!raw!./template.html';
+import delay from 'xstream/extra/delay';
 import {div} from '@cycle/dom';
+import docStyle from '!!css!less!./dmtf.less';
 import dropUntil from 'xstream/extra/dropUntil';
 import fromEvent from 'xstream/extra/fromEvent';
+import {highlight as hljs} from './highlight';
+import {toc as insertToC} from './toc';
+import pageWrapper from '!!raw!./page.html';
 import {render} from './markdown-driver';
-import {saveAs} from 'filesaver.js';
 import template from 'lodash.template';
-import wrapper from '!!raw!./page.html';
 import xs from 'xstream';
 
 export function main(sources) {
@@ -21,12 +24,9 @@ function killEvent(evt) {
   return evt;
 }
 
-function insertOrUpdate({data, html, name}) {
+function insertOrUpdate({html}) {
   return function generate(node) {
     node.elm.innerHTML = html;
-
-    let blob = new Blob([template(wrapper)({contents: html, data})]);
-    saveAs(blob, `${basename(name, '.md')}.html`);
   };
 }
 
@@ -70,7 +70,13 @@ function model({dragEnter$, dragLeave$, fileDropped$, fileLoaded$, hide$}) {
 
   const file$ = fileDropped$.map(({dataTransfer: {files}}) => files[0]);
 
-  const markdown$ = fileLoaded$.map(render).flatten();
+  const markdown$ = fileLoaded$
+  .compose(markdown)
+  .compose(highlight)
+  .compose(toc)
+  .compose(baseWrap);
+
+  const save$ = markdown$.compose(delay(200)).compose(fileWrap);
 
   return {
     contentOpacity$,
@@ -78,15 +84,16 @@ function model({dragEnter$, dragLeave$, fileDropped$, fileLoaded$, hide$}) {
     file$,
     hide$,
     markdown$,
+    save$
   };
 }
 
-function view({contentOpacity$, dropZoneOpacity$, file$, hide$, markdown$}) {
-  const view$ = markdown$.map(({data, html, file: {name}}) => {
+function view({contentOpacity$, dropZoneOpacity$, file$, hide$, markdown$, save$}) {
+  const view$ = markdown$.map(({html}) => {
     return div('#dmtf', {
       hook: {
-        insert: insertOrUpdate({data, html, name}),
-        update: insertOrUpdate({data, html, name}),
+        insert: insertOrUpdate({html}),
+        update: insertOrUpdate({html}),
       },
       style: {transition: 'opacity 0.6s, visibility 0.6s'},
     });
@@ -116,6 +123,7 @@ function view({contentOpacity$, dropZoneOpacity$, file$, hide$, markdown$}) {
     DOM: view$,
     Fader: fadeInOut$,
     FileReader: file$,
+    FileWriter: save$,
     Visibility: xs.merge(
       hide$.map(target => ({target, visibility: 'hidden'})),
       fadeInOut$
@@ -123,4 +131,38 @@ function view({contentOpacity$, dropZoneOpacity$, file$, hide$, markdown$}) {
       .map(({target}) => ({target, visibility: 'visible'})),
     ),
   };
+}
+
+function markdown(stream$) {
+  return stream$.map(render).flatten();
+}
+
+function highlight(stream$) {
+  return stream$.map(result =>
+    xs.fromPromise(hljs(result.html).then(html => ({...result, html})))
+  ).flatten();
+}
+
+function toc(stream$) {
+  return stream$.map(result =>
+    xs.fromPromise(insertToC(result.html).then(html => ({...result, html})))
+  ).flatten();
+}
+
+function baseWrap(stream$) {
+  return stream$.map(result => ({
+    ...result,
+    html: template(baseWrapper)({
+      contents: result.html,
+      data: result.data,
+      style: docStyle
+    }),
+  }));
+}
+
+function fileWrap(stream$) {
+  return stream$.map(({data, html, file: {name}}) => ({
+    name: `${basename(name, '.md')}.html`,
+    content: new Blob([template(pageWrapper)({data, contents: html})]),
+  }));
 }

@@ -1,6 +1,7 @@
 import hlHTTP from 'highlight.js/lib/languages/http';
 import hljs from 'highlight.js/lib/highlight';
 import hlJSON from 'highlight.js/lib/languages/json';
+import hljsStyle from '!!css!highlight.js/styles/github.css';
 import hlXML from 'highlight.js/lib/languages/xml';
 
 hljs.registerLanguage('http', hlHTTP);
@@ -20,5 +21,5 @@ export function highlight(html) {
     }
   }
 
-  return Promise.resolve(div.innerHTML);
+  return Promise.resolve(`<style scoped>${hljsStyle}</style>${div.innerHTML}`);
 }
