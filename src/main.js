@@ -2,6 +2,7 @@ import {a, div} from '@cycle/dom';
 import {dropZone, instructions, saveButton} from './styles.css';
 import {basename} from 'path';
 import baseWrapper from '!!raw!./template.html';
+import delay from 'xstream/extra/delay';
 import docStyle from '!!css!less!./dmtf.less';
 import dropUntil from 'xstream/extra/dropUntil';
 import fromEvent from 'xstream/extra/fromEvent';
@@ -62,12 +63,15 @@ function intent({DOM, FileReader}) {
 }
 
 function model({dragEnter$, dragLeave$, fileDropped$, fileLoaded$, hide$, save$}) {
-  const contentOpacity$ = xs.merge(fileLoaded$.mapTo(1), fileDropped$.mapTo(0));
+  const contentOpacity$ = xs.merge(
+    fileLoaded$.mapTo(0),
+    fileLoaded$.compose(delay(200)).mapTo(1),
+  );
 
   const dropZoneOpacity$ = xs.merge(
     dragEnter$.mapTo(1),
     dragLeave$.mapTo(0),
-    fileDropped$.mapTo(0),
+    fileLoaded$.mapTo(0),
   );
 
   const file$ = fileDropped$.map(({dataTransfer: {files}}) => files[0]);
@@ -77,7 +81,7 @@ function model({dragEnter$, dragLeave$, fileDropped$, fileLoaded$, hide$, save$}
   .compose(highlight)
   .compose(toc)
   .compose(baseWrap)
-  .remember();
+  .compose(delay(150));
 
   save$ = save$.map(() => markdown$.compose(fileWrap).take(1)).flatten();
 
@@ -93,7 +97,7 @@ function model({dragEnter$, dragLeave$, fileDropped$, fileLoaded$, hide$, save$}
 
 function view({contentOpacity$, dropZoneOpacity$, file$, hide$, markdown$, save$}) {
   const view$ = markdown$.map(({html}) => {
-    return div('#dmtf', {style: {transition: 'opacity 0.6s, visibility 0.6s'}}, [
+    return div('#dmtf', {style: {transition: 'opacity 0.2s, visibility 0.2s'}}, [
       div({
         hook: {
           insert: insertOrUpdate({html}),
