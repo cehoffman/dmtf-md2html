@@ -1,8 +1,7 @@
-import {dropZone, instructions} from './styles.css';
+import {a, div} from '@cycle/dom';
+import {dropZone, instructions, saveButton} from './styles.css';
 import {basename} from 'path';
 import baseWrapper from '!!raw!./template.html';
-import delay from 'xstream/extra/delay';
-import {div} from '@cycle/dom';
 import docStyle from '!!css!less!./dmtf.less';
 import dropUntil from 'xstream/extra/dropUntil';
 import fromEvent from 'xstream/extra/fromEvent';
@@ -33,6 +32,8 @@ function insertOrUpdate({html}) {
 function intent({DOM, FileReader}) {
   const root$ = DOM.select(':root');
 
+  const save$ = DOM.select(`.${saveButton}`).events('click');
+
   const fileDropped$ = xs.merge(
     root$.events('dragover'),
     root$.events('drop'),
@@ -56,10 +57,11 @@ function intent({DOM, FileReader}) {
     fileDropped$,
     fileLoaded$,
     hide$,
+    save$,
   };
 }
 
-function model({dragEnter$, dragLeave$, fileDropped$, fileLoaded$, hide$}) {
+function model({dragEnter$, dragLeave$, fileDropped$, fileLoaded$, hide$, save$}) {
   const contentOpacity$ = xs.merge(fileLoaded$.mapTo(1), fileDropped$.mapTo(0));
 
   const dropZoneOpacity$ = xs.merge(
@@ -74,9 +76,10 @@ function model({dragEnter$, dragLeave$, fileDropped$, fileLoaded$, hide$}) {
   .compose(markdown)
   .compose(highlight)
   .compose(toc)
-  .compose(baseWrap);
+  .compose(baseWrap)
+  .remember();
 
-  const save$ = markdown$.compose(delay(200)).compose(fileWrap);
+  save$ = save$.map(() => markdown$.compose(fileWrap).take(1)).flatten();
 
   return {
     contentOpacity$,
@@ -90,13 +93,15 @@ function model({dragEnter$, dragLeave$, fileDropped$, fileLoaded$, hide$}) {
 
 function view({contentOpacity$, dropZoneOpacity$, file$, hide$, markdown$, save$}) {
   const view$ = markdown$.map(({html}) => {
-    return div('#dmtf', {
-      hook: {
-        insert: insertOrUpdate({html}),
-        update: insertOrUpdate({html}),
-      },
-      style: {transition: 'opacity 0.6s, visibility 0.6s'},
-    });
+    return div('#dmtf', {style: {transition: 'opacity 0.6s, visibility 0.6s'}}, [
+      div({
+        hook: {
+          insert: insertOrUpdate({html}),
+          update: insertOrUpdate({html}),
+        },
+      }),
+      a(`.${saveButton}`, 'Save HTML'),
+    ]);
   })
   .startWith(div('#dmtf'))
   .map(rendered => {
