@@ -6,6 +6,33 @@ const HTMLWebpackPlugin = require('html-webpack-plugin');
 // const {dependencies} = require('./package.json');
 // const externals = Object.keys(dependencies || {});
 
+const plugins = [
+  new ErrorNotificationPlugin(),
+  new HTMLWebpackPlugin({title: 'DMTF HTML Releaser'}),
+  new webpack.NoErrorsPlugin(),
+];
+
+if (process.env.NODE_ENV === 'production') {
+  plugins.push(
+    new webpack.LoaderOptionsPlugin({
+      minimize: true,
+      debug: false,
+    }),
+    new webpack.optimize.UglifyJsPlugin({
+      beautify: false,
+      mangle: {
+        screw_ie8: true,
+      },
+      compress: {
+        screw_ie8: true,
+      },
+      comments: false,
+      sourceMap: false,
+    }),
+    new webpack.optimize.DedupePlugin()
+  );
+}
+
 module.exports = [
   {
     name: 'web',
@@ -33,32 +60,7 @@ module.exports = [
       sourceMapFilename: '[name].min.map',
     },
     target: 'web',
-    plugins: [
-      new ErrorNotificationPlugin(),
-      new HTMLWebpackPlugin({title: 'DMTF HTML Releaser'}),
-      // new webpack.LoaderOptionsPlugin({
-      //   minimize: true,
-      //   debug: true,
-      // }),
-      // new webpack.optimize.UglifyJsPlugin({
-      //   beautify: false,
-      //   mangle: {
-      //     screw_ie8: true,
-      //     keep_fnames: true,
-      //   },
-      //   compress: {
-      //     screw_ie8: true,
-      //     keep_fnames: true,
-      //   },
-      //   comments: false,
-      //   sourceMap: true,
-      // }),
-      // new webpack.optimize.DedupePlugin(),
-      // new CompressionPlugin({
-      //   regExp: /.js$/,
-      // }),
-      new webpack.NoErrorsPlugin(),
-    ],
+    plugins,
     module: {
       preLoaders: [
         {
