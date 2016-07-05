@@ -100,17 +100,29 @@ function model({deleteEntry$, dragEnter$, dragLeave$, fileDropped$, fileLoaded$,
   }));
 
   const state$ = xs.merge(
-    content$.map(item => state => state.concat(item)),
-    deleteEntry$.map(idx => state => (state.splice(idx, 1), state)),
+    content$.map(item => state => {
+      let newState = Object.assign({}, state);
+      newState.entries = newState.entries.concat(item);
+      newState.active = item;
+      return newState;
+    }),
+    deleteEntry$.map(idx => state => {
+      let newState = Object.assign({}, state);
+      newState.entries = state.entries.slice();
+      newState.entries.splice(idx, 1);
+      if (state.entries[idx] === state.active) {
+        newState.active = newState.entries[newState.entries.length - 1];
+      }
+      return newState;
+    }),
+    selectEntry$.map(idx => state => {
+      return Object.assign({}, state, {active: state.entries[idx]});
+    }),
   )
-  .fold((state, action) => action(state), [])
+  .fold((state, action) => action(state), {entries: []})
   .compose(debounce(100));
 
-  const markdown$ = xs.merge(
-    state$.map(state => state[state.length - 1]),
-    state$.map(state => selectEntry$.map(idx => state[idx])).flatten(),
-  )
-  .compose(dropRepeats());
+  const markdown$ = state$.map(({active}) => active).compose(dropRepeats());
 
   const contentOpacity$ = xs.merge(
     markdown$.mapTo(0),
@@ -121,7 +133,7 @@ function model({deleteEntry$, dragEnter$, dragLeave$, fileDropped$, fileLoaded$,
     dragEnter$.mapTo(1),
     xs.merge(fileDropped$, fileLoaded$).compose(debounce(150)).mapTo(0),
     // Only hide the drop zone on leave if there is something to show
-    state$.map(state => dragLeave$.mapTo(state.length ? 0 : 1)).flatten(),
+    markdown$.map(active => dragLeave$.mapTo(active ? 0 : 1)).flatten(),
     // When nothing is selected, show the drop zone
     markdown$.filter(x => !x).mapTo(1),
   );
@@ -172,9 +184,15 @@ function view({contentOpacity$, dropZoneOpacity$, file$, hide$, markdown$, save$
   );
 
   const fileList$ = xs.combine(state$, markdown$)
-  .map(([list, active]) =>
+  .map(([{entries: list}, active]) =>
     div('.list', list.map((item, i) =>
-      div('.entry', {attrs: {'data-active': item === active}}, [
+      div('.entry', {
+        key: item,
+        attrs: {'data-active': item === active},
+        style: {
+          remove: {opacity: '0', transform: 'translateX(100px)'},
+        },
+      }, [
         span('.filename', {attrs: {'data-entry': i}}, basename(item.name, '.html')),
         span('.octicon.octicon-trashcan.delete', {attrs: {'data-entry': i}}),
       ])
