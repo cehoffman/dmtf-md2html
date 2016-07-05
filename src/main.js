@@ -131,7 +131,7 @@ function model({deleteEntry$, dragEnter$, dragLeave$, fileDropped$, fileLoaded$,
     dropZoneOpacity$,
     file$,
     hide$,
-    markdown$: markdown$.compose(delay(150)),
+    markdown$,
     save$: markdown$.filter(x => x).map(({data, fileContent, name}) =>
       save$.map(() => ({name, content: new Blob([fileContent])}))
     ).flatten(),
@@ -140,7 +140,7 @@ function model({deleteEntry$, dragEnter$, dragLeave$, fileDropped$, fileLoaded$,
 }
 
 function view({contentOpacity$, dropZoneOpacity$, file$, hide$, markdown$, save$, state$}) {
-  const content$ = markdown$.map(result => {
+  const content$ = markdown$.compose(delay(150)).map(result => {
     if (!result) {
       return div('#dmtf');
     }
@@ -171,10 +171,11 @@ function view({contentOpacity$, dropZoneOpacity$, file$, hide$, markdown$, save$
     ]),
   );
 
-  const fileList$ = state$.map(list =>
-    div('.list', list.map(({name}, i) =>
-      div('.entry', [
-        span('.filename', {attrs: {'data-entry': i}}, basename(name, '.html')),
+  const fileList$ = xs.combine(state$, markdown$)
+  .map(([list, active]) =>
+    div('.list', list.map((item, i) =>
+      div('.entry', {attrs: {'data-active': item === active}}, [
+        span('.filename', {attrs: {'data-entry': i}}, basename(item.name, '.html')),
         span('.octicon.octicon-trashcan.delete', {attrs: {'data-entry': i}}),
       ])
     ))

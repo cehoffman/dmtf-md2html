@@ -36,9 +36,14 @@
     font-size: 15px;
     font-weight: bold;
     justify-content: space-between;
+    transition: background-color 1s;
 
     &:first-child {
       border-top: none;
+    }
+
+    &[data-active='true'] {
+      background-color: #ccc;
     }
   }
 
