@@ -83,9 +83,7 @@ function intent({DOM, FileReader}) {
 
 function model({deleteEntry$, dragEnter$, dragLeave$, fileDropped$, fileLoaded$, hide$, save$, selectEntry$}) {
   const file$ = fileDropped$
-  .map(({dataTransfer: {files}}) =>
-    xs.fromArray([...files].filter(({type}) => type === 'text/markdown'))
-  )
+  .map(({dataTransfer: {files}}) => xs.fromArray([...files]))
   .flatten();
 
   const content$ = fileLoaded$
