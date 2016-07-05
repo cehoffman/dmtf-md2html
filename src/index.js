@@ -26,13 +26,6 @@ run(main, {
     complete: () => {},
     error: () => {},
   }),
-  Log: msg$ => msg$.addListener({
-    /* eslint-disable no-console */
-    next: console.log.bind(console, 'LOG:'),
-    error: console.error.bind(console, 'ERROR:'),
-    complete: console.log.bind(console, 'COMPLETE:'),
-    /* eslint-enable no-console */
-  }),
   Visibility: stream$ => {
     stream$.addListener({
       next: ({target, visibility}) => {
