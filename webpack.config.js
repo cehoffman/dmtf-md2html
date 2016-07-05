@@ -48,7 +48,7 @@ module.exports = [
     },
     resolve: {
       extensions: ['', '.js'],
-      modules: [resolve('src'), 'node_modules'],
+      modules: [resolve('src'), resolve('node_modules')],
       packageMains: ['browser', 'main'],
     },
     entry: {
@@ -94,6 +94,10 @@ module.exports = [
           //   modules: true,
           //   sourceMap: true,
           // },
+        },
+        {
+          loader: 'url',
+          test: /\.(svg|eot|woff|ttf)$/
         }
       ],
     },

@@ -11,6 +11,48 @@
     margin: 0;
     padding: 0;
   }
+
+  .list {
+    width: 200px;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background-color: #eee;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow-x: hidden;
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  .entry {
+    height: 40px;
+    padding: 0 15px;
+    align-items: center;
+    border-top: 2px solid #ddd;
+    display: flex;
+    font-size: 15px;
+    font-weight: bold;
+    justify-content: space-between;
+
+    &:first-child {
+      border-top: none;
+    }
+  }
+
+  .filename {
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .delete {
+    margin-left: 10px;
+    cursor: pointer;
+  }
 }
 
 .dropZone {
@@ -34,12 +76,13 @@
   border: 6px #ddd dashed;
   border-radius: 6px;
   display: flex;
-  font-size: 200%;
+  font-size: 40px;
   font-weight: bold;
   justify-content: center;
 }
 
 .saveButton {
+  min-width: 70px;
   position: fixed;
   right: 20px;
   bottom: 20px;
@@ -52,6 +95,7 @@
   cursor: pointer;
   display: flex;
   font-weight: bold;
+  justify-content: center;
   user-select: none;
   white-space: nowrap;
 
