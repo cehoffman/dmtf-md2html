@@ -186,22 +186,24 @@ h1 {
   margin-bottom: 2em;
 }
 
-&[data-status='Work in Progress'] {
-  .wip {
-    border: 2px ridge #eee;
+#dmtf {
+  &[data-status='Work in Progress'] {
+    .wip {
+      border: 2px ridge #eee;
+    }
   }
-}
 
-&[data-status='Published'], &[data-status='Draft'] {
-  .wip {
-    color: #fff;
-    cursor: default;
-    visibility: hidden;
-    user-select: none;
-
-    a {
+  &[data-status='Published'], &[data-status='Draft'] {
+    .wip {
       color: #fff;
       cursor: default;
+      visibility: hidden;
+      user-select: none;
+
+      a {
+        color: #fff;
+        cursor: default;
+      }
     }
   }
 }
