@@ -144,16 +144,12 @@ table {
       content: string(doctitle);
     }
 
-    @bottom {
-      border-top: 0.1em solid #444;
-    }
-
     @bottom-left {
       content: string(docversion);
     }
 
     @bottom-center {
-      content: string(docconfidentiality);
+      content: string(docconfidentiality) string(docstatus);
     }
 
     @bottom-right {
