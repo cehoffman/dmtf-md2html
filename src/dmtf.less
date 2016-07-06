@@ -28,10 +28,6 @@
   list-style-type: none;
 }
 
-#wrapper {
-  display: table-row-group;
-}
-
 body {
   border-collapse: collapse;
   color: #333;
@@ -97,11 +93,6 @@ table {
   }
 }
 
-
-#footer, #last-footer-fix {
-  display: none;
-}
-
 /* @import './review.less'; */
 
 @media print {
@@ -115,60 +106,58 @@ table {
     page-break-before: auto;
   }
 
-  #last-footer-fix {
-    border: none;
+  h1:not(.title) {
     break-before: page;
-    display: block !important;
-    height: 720pt;
-    line-height: 37em;
     page-break-before: always;
-    text-align: center;
-
-    &::after {
-      content: 'This page intentionally left blank';
-      font-weight: bold;
-    }
   }
 
-  #header {
-    display: table-header-group;
-    height: 4em;
-
-    &::before {
-      content: 'DSP' attr(data-doc-number);
-    }
-
-    &::after {
-      content: attr(data-doc-title);
-      float: right;
-    }
+  .title {
+    string-set: doctitle content();
   }
 
-  #footer {
-    display: table-footer-group !important;
-    text-align: center;
+  .dsp {
+    string-set: docnumber content();
+  }
 
-    > div {
+  .version {
+    string-set: docversion content();
+  }
+
+  .status {
+    string-set: docstatus content();
+  }
+
+  .confidentiality {
+    string-set: docconfidentiality content();
+  }
+
+  @page {
+    font-size: 13px;
+    color: #333;
+    // border-bottom: 0.1em solid #444;
+
+    @top-left {
+      content: string(docnumber);
+    }
+
+    @top-right {
+      content: string(doctitle);
+    }
+
+    @bottom {
       border-top: 0.1em solid #444;
-      height: 4em;
-      margin-top: 3em;
+    }
 
-      div {
-        margin: 0 auto;
-        width: 150pt;
-      }
+    @bottom-left {
+      content: string(docversion);
+    }
 
-      &::before {
-        content: 'Version ' attr(data-doc-version);
-        float: left;
-      }
+    @bottom-center {
+      content: string(docconfidentiality);
+    }
 
-      &::after {
-        content: counter(page);
-        counter-increment: page;
-        float: right;
-        margin-top: -1.4em;
-      }
+    @bottom-right {
+      content: counter(page);
     }
   }
 }
@@ -195,7 +184,6 @@ pre {
 h1 {
   border: none;
   margin-bottom: 2em;
-  margin-top: 5em;
 }
 
 &[data-status='Work in Progress'] {
