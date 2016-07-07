@@ -1,3 +1,12 @@
+a {
+  color: #4183c4;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .wip {
   font-weight: normal;
   margin-bottom: 2em;
@@ -89,12 +98,15 @@ table {
   border-spacing: 0;
   word-break: normal;
 
+  thead {
+    tr:nth-child(2n + 1) {
+      background-color: #f8f8f8;
+    }
+  }
+
   tr {
     border-top: 1px solid #ccc;
 
-    &:nth-child(2n) {
-      background-color: #f8f8f8;
-    }
   }
 
   th, td {
@@ -104,6 +116,12 @@ table {
 }
 
 /* @import './review.less'; */
+
+@media screen {
+  tr:nth-child(2n) {
+    background-color: #f8f8f8;
+  }
+}
 
 @media print {
   #toc-header, #toc ~ h2 {
@@ -120,6 +138,15 @@ table {
     break-before: page;
     page-break-before: always;
   }
+
+  tbody tr {
+    background-color: inherit;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+
 
   .title {
     string-set: doctitle content();
@@ -237,15 +264,6 @@ table {
 
   @bottom-right {
     content: 'Version ' string(docversion);
-  }
-}
-
-a {
-  color: #4183c4;
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
   }
 }
 
