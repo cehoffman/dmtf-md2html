@@ -45,6 +45,7 @@ body {
   border-collapse: collapse;
   color: #333;
   font-size: 13px;
+  font-family: Arial;
   line-height: 1.4;
   word-wrap: break-word;
 }
@@ -124,6 +125,10 @@ table {
 }
 
 @media print {
+  body {
+    font-size: 10pt;
+  }
+
   #toc-header, #toc ~ h2 {
     break-before: page;
     page-break-before: always;
