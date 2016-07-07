@@ -139,6 +139,25 @@ table {
     page-break-before: auto;
   }
 
+  #toc {
+    margin-left: 0;
+    padding-left: 0;
+
+    /* Put the page number of the ToC item on the right precended by periods */
+    a {
+      text-decoration: none;
+
+      &::after {
+        content: leader('.') target-counter(attr(href), page);
+      }
+    }
+
+    /* Hide deeper than 3rd level headers */
+    ul > ul > ul {
+      display: none;
+    }
+  }
+
   h1:not(.title) {
     break-before: page;
     page-break-before: always;
