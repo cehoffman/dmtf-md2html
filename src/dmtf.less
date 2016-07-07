@@ -140,31 +140,103 @@ table {
   .confidentiality {
     string-set: docconfidentiality content();
   }
+}
 
-  @page {
-    font-size: 13px;
-    color: #333;
-    // border-bottom: 0.1em solid #444;
+@page {
+  size: US-Letter;
+  font-size: 13px;
+  border-bottom: thin #444 solid;
+  color: #333;
+  padding-top: 0.25in;
+  padding-bottom: 0.25in;
+  margin-top: 0.5in;
+  margin-bottom: 0.5in;
+  // margin-inside: 1in;
+  // margin-outside: 0.5in;
 
-    @top-left {
-      content: string(docnumber);
-    }
+  @top-left {
+    content: string(docnumber);
+    vertical-align: bottom;
+  }
 
-    @top-right {
-      content: string(doctitle);
-    }
+  @top-right {
+    content: string(doctitle);
+    vertical-align: bottom;
+  }
 
-    @bottom-left {
-      content: 'Version ' string(docversion);
-    }
+  @bottom-left {
+    content: 'Version ' string(docversion);
+    vertical-align: top;
+  }
 
-    @bottom-center {
-      content: string(docconfidentiality) string(docstatus);
-    }
+  @bottom-center {
+    content: string(docconfidentiality) string(docstatus);
+    vertical-align: top;
+  }
 
-    @bottom-right {
-      content: counter(page);
-    }
+  @bottom-right {
+    content: counter(page);
+    vertical-align: top;
+  }
+}
+
+@page:first {
+  border-bottom: none;
+
+  @top-left {
+    content: '';
+  }
+
+  @top-right {
+    content: '';
+  }
+
+  @bottom-left {
+    content: '';
+  }
+
+  @bottom-center {
+    content: '';
+  }
+
+  @bottom-right {
+    content: '';
+  }
+}
+
+@page:right {
+  @top-left {
+    content: string(docnumber);
+  }
+
+  @top-right {
+    content: string(doctitle);
+  }
+
+  @bottom-left {
+    content: 'Version ' string(docversion);
+  }
+
+  @bottom-right {
+    content: counter(page);
+  }
+}
+
+@page:left {
+  @top-left {
+    content: string(doctitle);
+  }
+
+  @top-right {
+    content: string(docnumber);
+  }
+
+  @bottom-left {
+    content: counter(page);
+  }
+
+  @bottom-right {
+    content: 'Version ' string(docversion);
   }
 }
 
