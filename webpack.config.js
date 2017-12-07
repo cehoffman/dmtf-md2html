@@ -97,7 +97,7 @@ module.exports = [
         },
         {
           loader: 'url',
-          test: /\.(svg|eot|woff|ttf)$/
+          test: /\.(svg|eot|woff|ttf|jpg)$/
         }
       ],
     },
