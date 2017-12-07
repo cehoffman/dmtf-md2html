@@ -1,0 +1,16 @@
+language: node_js
+
+node_js:
+  - "8.4"
+
+before_install: git lfs pull
+install: ./yarn install
+script: ./yarn run build
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  local_dir: dist
+  on:
+    branch: master
