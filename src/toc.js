@@ -21,7 +21,10 @@ export function toc(html) {
 
     while (level < currentLevel) {
       counter[levelMap[currentLevel--]] = 0;
-      root = levels.pop();
+      let newRoot = levels.pop();
+      if (newRoot) {
+        root = newRoot;
+      }
     }
 
     counter[tag.type]++;
